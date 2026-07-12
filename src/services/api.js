@@ -1,11 +1,14 @@
-const API_BASE = 'http://localhost:4000/api'
+const API_BASE = import.meta.env.VITE_API_URL || ''
 
 function token() { return localStorage.getItem('haifarmer_admin_token') }
 
 async function handleResponse(res) {
   if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: res.statusText }))
-    throw new Error(err.error || `HTTP ${res.status}`)
+    const body = await res.text()
+    let msg
+    try { const parsed = JSON.parse(body); msg = parsed.error || parsed.message || body }
+    catch { msg = body || res.statusText }
+    throw new Error(msg || `HTTP ${res.status}`)
   }
   const text = await res.text()
   if (!text) return null
