@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { toast } from 'react-toastify'
-import { fetchOrders, updateOrder, fetchOrderHistory } from '../services/adminService'
+import { fetchOrders, updateOrder, fetchOrderTimeline } from '../services/adminService'
 import { Modal, DataTable, Pagination, Badge, Tabs } from '../../components/ui'
 import { formatPrice } from '../../utils/helpers'
 
@@ -35,7 +35,7 @@ export default function AdminOrders() {
   const openDetail = async (order) => {
     setDetailOrder(order)
     try {
-      const h = await fetchOrderHistory(order.id)
+      const h = await fetchOrderTimeline(order.id)
       setHistory(h)
     } catch { setHistory([]) }
   }
@@ -55,7 +55,7 @@ export default function AdminOrders() {
       await updateOrder(detailOrder?.id || editForm.id, editForm)
       toast.success('Order updated')
       setEditModal(false); load()
-      if (detailOrder) { setDetailOrder({ ...detailOrder, ...editForm }); const h = await fetchOrderHistory(detailOrder.id); setHistory(h) }
+      if (detailOrder) { setDetailOrder({ ...detailOrder, ...editForm }); const h = await fetchOrderTimeline(detailOrder.id); setHistory(h) }
     } catch (e) { toast.error(e.message) }
   }
 

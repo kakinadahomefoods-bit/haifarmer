@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { toast } from 'react-toastify'
 import { fetchBanners, createBanner, updateBanner, deleteBanner, reorderBanners } from '../services/adminService'
 import { Modal, ConfirmDialog, Toggle } from '../../components/ui'
+import ImageUploader from '../../components/ui/ImageUploader'
 import { placeholderImage } from '../../utils/helpers'
 
 export default function AdminBanners() {
@@ -168,15 +169,8 @@ export default function AdminBanners() {
               <input value={form.button_url} onChange={e => setForm({ ...form, button_url: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-brand-500 focus:ring-2 focus:ring-brand-100" />
             </div>
           </div>
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">Desktop Image URL</label>
-            <input value={form.desktop_image_url} onChange={e => setForm({ ...form, desktop_image_url: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-brand-500 focus:ring-2 focus:ring-brand-100" placeholder="https://..." />
-            {form.desktop_image_url && <img src={form.desktop_image_url} alt="" className="mt-2 h-32 rounded-lg object-cover border" />}
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">Mobile Image URL</label>
-            <input value={form.mobile_image_url} onChange={e => setForm({ ...form, mobile_image_url: e.target.value })} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-brand-500 focus:ring-2 focus:ring-brand-100" placeholder="https://..." />
-          </div>
+          <ImageUploader value={form.desktop_image_url} onChange={v => setForm({...form, desktop_image_url: v})} label="Desktop Image" />
+          <ImageUploader value={form.mobile_image_url} onChange={v => setForm({...form, mobile_image_url: v})} label="Mobile Image" />
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-1">Start Date</label>

@@ -1,9 +1,9 @@
-import { getSiteSettings, getBannerLinks } from './dataProvider'
+import { getBusinessSettings, getSiteAssets } from './dataProvider'
 
 export async function fetchSiteAssets() {
-  return getSiteSettings()
+  return getSiteAssets()
 }
 
 export async function fetchBannerLinks() {
-  return getBannerLinks()
+  return getSiteAssets()
 }

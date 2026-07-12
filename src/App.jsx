@@ -20,18 +20,26 @@ const Login = lazy(() => import('./pages/Login'))
 const Signup = lazy(() => import('./pages/Signup'))
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'))
 const Farmers = lazy(() => import('./pages/Farmers'))
+const FarmerPage = lazy(() => import('./pages/FarmerPage'))
 
 // Admin
 const AdminLayout = lazy(() => import('./admin/components/AdminLayout'))
 const AdminLogin = lazy(() => import('./admin/pages/AdminLogin'))
 const AdminDashboard = lazy(() => import('./admin/pages/Dashboard'))
+const AdminCategories = lazy(() => import('./admin/pages/Categories'))
+const AdminProducts = lazy(() => import('./admin/pages/Products'))
+const AdminCombos = lazy(() => import('./admin/pages/Combos'))
+const AdminCoupons = lazy(() => import('./admin/pages/IndividualCoupons'))
+const AdminBatchCoupons = lazy(() => import('./admin/pages/BatchCoupons'))
+const AdminOrders = lazy(() => import('./admin/pages/Orders'))
+const AdminCustomers = lazy(() => import('./admin/pages/Customers'))
 const AdminBanners = lazy(() => import('./admin/pages/Banners'))
 const AdminAnnouncements = lazy(() => import('./admin/pages/Announcements'))
-const AdminBatchCoupons = lazy(() => import('./admin/pages/BatchCoupons'))
-const AdminIndividualCoupons = lazy(() => import('./admin/pages/IndividualCoupons'))
-const AdminShipping = lazy(() => import('./admin/pages/Shipping'))
-const AdminProducts = lazy(() => import('./admin/pages/Products'))
-const AdminOrders = lazy(() => import('./admin/pages/Orders'))
+const AdminDelivery = lazy(() => import('./admin/pages/Delivery'))
+const AdminPayment = lazy(() => import('./admin/pages/Payment'))
+const AdminFarmers = lazy(() => import('./admin/pages/Farmers'))
+const AdminQR = lazy(() => import('./admin/pages/QRCodes'))
+const AdminWebsite = lazy(() => import('./admin/pages/Website'))
 const AdminAuditLogs = lazy(() => import('./admin/pages/AuditLogs'))
 
 export default function App() {
@@ -44,6 +52,7 @@ export default function App() {
             <Route path="/" element={<Home />} />
             <Route path="/about" element={<About />} />
             <Route path="/farmers" element={<Farmers />} />
+            <Route path="/farmer" element={<FarmerPage />} />
             <Route path="/products" element={<Products />} />
             <Route path="/products/:slug" element={<ProductDetail />} />
             <Route path="/combos" element={<Bundles />} />
@@ -61,13 +70,20 @@ export default function App() {
             <Route path="/admin-login" element={<AdminLogin />} />
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<AdminDashboard />} />
+              <Route path="categories" element={<AdminCategories />} />
+              <Route path="products" element={<AdminProducts />} />
+              <Route path="combos" element={<AdminCombos />} />
+              <Route path="coupons" element={<AdminCoupons />} />
+              <Route path="coupons/batch" element={<AdminBatchCoupons />} />
+              <Route path="orders" element={<AdminOrders />} />
+              <Route path="customers" element={<AdminCustomers />} />
               <Route path="banners" element={<AdminBanners />} />
               <Route path="announcements" element={<AdminAnnouncements />} />
-              <Route path="products" element={<AdminProducts />} />
-              <Route path="orders" element={<AdminOrders />} />
-              <Route path="coupons/batch" element={<AdminBatchCoupons />} />
-              <Route path="coupons/individual" element={<AdminIndividualCoupons />} />
-              <Route path="shipping" element={<AdminShipping />} />
+              <Route path="delivery" element={<AdminDelivery />} />
+              <Route path="payment" element={<AdminPayment />} />
+              <Route path="farmers" element={<AdminFarmers />} />
+              <Route path="qr" element={<AdminQR />} />
+              <Route path="website" element={<AdminWebsite />} />
               <Route path="audit" element={<AdminAuditLogs />} />
             </Route>
 
