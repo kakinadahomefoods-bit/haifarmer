@@ -10,8 +10,8 @@ async function connect() {
   if (conn) return conn
   try {
     conn = await mongoose.connect(MONGO_URI, { serverSelectionTimeoutMS: 5000 })
-  } catch {
-    console.warn('Primary MONGO_URI failed, trying MONGO_URI_DIRECT')
+  } catch (e) {
+    console.warn('Primary MONGO_URI failed:', e.message, 'trying MONGO_URI_DIRECT')
     conn = await mongoose.connect(MONGO_URI_DIRECT, { serverSelectionTimeoutMS: 10000 })
   }
   return conn

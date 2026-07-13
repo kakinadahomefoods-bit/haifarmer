@@ -7,7 +7,7 @@ const schema = new mongoose.Schema({
   name: { type: String, default: 'Admin' },
   role: { type: String, default: 'admin', enum: ['admin', 'superadmin'] },
   is_active: { type: Boolean, default: true }
-, { timestamps: true, toJSON: { virtuals: true } })
+}, { timestamps: true, toJSON: { virtuals: true } })
 
 schema.pre('save', async function () {
   if (this.isModified('password')) {

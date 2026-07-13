@@ -48,6 +48,8 @@ export default function AdminBanners() {
     setModalOpen(true)
   }
 
+  function bannerId(b) { return b.id || (b._id ? (typeof b._id === 'string' ? b._id : b._id.toString()) : null) }
+
   const handleSave = async () => {
     if (!form.title) { toast.error('Title is required'); return }
     if (saving) return
@@ -59,7 +61,9 @@ export default function AdminBanners() {
         ends_at: form.ends_at ? new Date(form.ends_at).toISOString() : null
       }
       if (editing) {
-        await updateBanner(editing.id, payload)
+        const id = bannerId(editing)
+        if (!id) { toast.error('Cannot edit: banner ID is missing'); return }
+        await updateBanner(id, payload)
         toast.success('Banner updated')
       } else {
         await createBanner(payload)
@@ -75,7 +79,9 @@ export default function AdminBanners() {
     if (saving) return
     setSaving(true)
     try {
-      await deleteBanner(deleteTarget.id)
+      const id = bannerId(deleteTarget)
+      if (!id) { toast.error('Cannot delete: banner ID is missing'); return }
+      await deleteBanner(id)
       toast.success('Banner deleted')
       loadBanners()
     } catch (e) { toast.error(e.message) }
@@ -84,11 +90,11 @@ export default function AdminBanners() {
 
   const handleReorder = async (id, direction) => {
     const sorted = [...banners].sort((a, b) => a.sort_order - b.sort_order)
-    const idx = sorted.findIndex(b => b.id === id)
+    const idx = sorted.findIndex(b => bannerId(b) === id)
     if (idx < 0) return
     const swapIdx = idx + direction
     if (swapIdx < 0 || swapIdx >= sorted.length) return
-    const ids = sorted.map(b => b.id)
+    const ids = sorted.map(b => bannerId(b))
     ;[ids[idx], ids[swapIdx]] = [ids[swapIdx], ids[idx]]
     try {
       await reorderBanners(ids)
@@ -120,7 +126,7 @@ export default function AdminBanners() {
           <div className="rounded-xl border border-dashed border-slate-200 p-12 text-center text-slate-400">No banners yet</div>
         ) : (
           banners.sort((a, b) => a.sort_order - b.sort_order).map((banner, idx) => (
-            <div key={banner.id} className="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <div key={bannerId(banner) || idx} className="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
               {/* Preview */}
               <div className="h-20 w-32 shrink-0 rounded-lg overflow-hidden bg-slate-100">
                 <img src={banner.desktop_image_url || placeholderImage} alt="" className="h-full w-full object-cover" />
@@ -142,8 +148,8 @@ export default function AdminBanners() {
               </div>
               {/* Actions */}
               <div className="flex items-center gap-1 shrink-0">
-                <button onClick={() => handleReorder(banner.id, -1)} disabled={idx === 0} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 disabled:opacity-30">↑</button>
-                <button onClick={() => handleReorder(banner.id, 1)} disabled={idx === banners.length - 1} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 disabled:opacity-30">↓</button>
+                <button onClick={() => handleReorder(bannerId(banner), -1)} disabled={idx === 0} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 disabled:opacity-30">↑</button>
+                <button onClick={() => handleReorder(bannerId(banner), 1)} disabled={idx === banners.length - 1} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 disabled:opacity-30">↓</button>
                 <button onClick={() => setPreview(banner)} className="rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-100">Preview</button>
                 <button onClick={() => openEdit(banner)} className="rounded-lg px-3 py-1.5 text-xs font-semibold text-blue-600 hover:bg-blue-50">Edit</button>
                 <button onClick={() => setDeleteTarget(banner)} className="rounded-lg px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50">Delete</button>

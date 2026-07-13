@@ -12,5 +12,5 @@ export async function requireAdmin(req, res, next) {
     if (!admin) return res.status(401).json({ error: 'Admin not found' })
     req.admin = admin
     next()
-  } catch { return res.status(401).json({ error: 'Invalid token' }) }
+  } catch (e) { return res.status(401).json({ error: 'Invalid token' }) }
 }
