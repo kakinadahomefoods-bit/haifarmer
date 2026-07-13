@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react'
+import { toast } from 'react-toastify'
 import { uploadImage } from '../../services/uploadService'
 
 export default function ImageUploader({ value, onChange, label = 'Image', folder = '', className = '' }) {
@@ -15,7 +16,7 @@ export default function ImageUploader({ value, onChange, label = 'Image', folder
       const url = await uploadImage(file, folder ? `haifarmer_${folder}` : undefined)
       onChange(url)
       setPreview(url)
-    } catch (err) { onChange(value); setPreview(value) }
+    } catch (err) { onChange(value); setPreview(value); toast.error(err.message || 'Image upload failed') }
     finally { setUploading(false); e.target.value = '' }
   }
 

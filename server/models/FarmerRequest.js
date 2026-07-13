@@ -8,6 +8,6 @@ const schema = new mongoose.Schema({
   address: { type: String, default: '' },
   message: { type: String, default: '' },
   status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' }
-}, { timestamps: true })
+, { timestamps: true, toJSON: { virtuals: true } })
 
 export default mongoose.model('FarmerRequest', schema)

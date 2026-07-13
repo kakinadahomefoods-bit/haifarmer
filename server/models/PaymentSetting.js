@@ -6,6 +6,6 @@ const schema = new mongoose.Schema({
   razorpay_key_secret: { type: String, default: '' },
   whatsapp_number: { type: String, default: '' },
   whatsapp_message_template: { type: String, default: '' }
-}, { timestamps: true })
+, { timestamps: true, toJSON: { virtuals: true } })
 
 export default mongoose.model('PaymentSetting', schema)

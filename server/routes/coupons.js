@@ -1,8 +1,10 @@
 import { Router } from 'express'
+import mongoose from 'mongoose'
 import Coupon from '../models/Coupon.js'
 import { requireAdmin } from '../middleware/auth.js'
 
 const router = Router()
+function isValidId(id) { return mongoose.Types.ObjectId.isValid(id) }
 
 router.get('/', async (req, res) => {
   try {
@@ -15,27 +17,46 @@ router.get('/', async (req, res) => {
 })
 
 router.get('/:id', async (req, res) => {
-  try { const item = await Coupon.findById(req.params.id); if (!item) return res.status(404).json({ error: 'Not found' }); res.json(item) }
-  catch (e) { res.status(500).json({ error: e.message }) }
+  try {
+    if (!isValidId(req.params.id)) return res.status(400).json({ error: 'Invalid coupon ID' })
+    const item = await Coupon.findById(req.params.id)
+    if (!item) return res.status(404).json({ error: 'Not found' })
+    res.json(item)
+  } catch (e) { res.status(500).json({ error: e.message }) }
 })
 
 router.post('/', requireAdmin, async (req, res) => {
   try {
-    const { coupon_code } = req.body
+    const { coupon_code, discount_value, discount_type } = req.body
     if (!coupon_code) return res.status(400).json({ error: 'Coupon code required' })
-    const item = await Coupon.create({ ...req.body, coupon_code: coupon_code.toUpperCase() })
+    if (!discount_value || discount_value <= 0) return res.status(400).json({ error: 'Discount value must be greater than 0' })
+    const code = coupon_code.toUpperCase()
+    const existing = await Coupon.findOne({ coupon_code: code })
+    if (existing) return res.status(409).json({ error: 'Coupon code already exists' })
+    if (discount_type === 'percentage' && discount_value > 100) return res.status(400).json({ error: 'Percentage discount cannot exceed 100%' })
+    const item = await Coupon.create({ ...req.body, coupon_code: code })
     res.status(201).json(item)
   } catch (e) { res.status(400).json({ error: e.message }) }
 })
 
 router.put('/:id', requireAdmin, async (req, res) => {
-  try { const item = await Coupon.findByIdAndUpdate(req.params.id, req.body, { new: true }); if (!item) return res.status(404).json({ error: 'Not found' }); res.json(item) }
-  catch (e) { res.status(400).json({ error: e.message }) }
+  try {
+    if (!isValidId(req.params.id)) return res.status(400).json({ error: 'Invalid coupon ID' })
+    const { coupon_code, ...updates } = req.body
+    if (updates.discount_value !== undefined && updates.discount_value <= 0) return res.status(400).json({ error: 'Discount value must be greater than 0' })
+    if (updates.discount_type === 'percentage' && updates.discount_value > 100) return res.status(400).json({ error: 'Percentage discount cannot exceed 100%' })
+    const item = await Coupon.findByIdAndUpdate(req.params.id, updates, { new: true, runValidators: true })
+    if (!item) return res.status(404).json({ error: 'Not found' })
+    res.json(item)
+  } catch (e) { res.status(400).json({ error: e.message }) }
 })
 
 router.delete('/:id', requireAdmin, async (req, res) => {
-  try { await Coupon.findByIdAndDelete(req.params.id); res.json({ deleted: true }) }
-  catch (e) { res.status(500).json({ error: e.message }) }
+  try {
+    if (!isValidId(req.params.id)) return res.status(400).json({ error: 'Invalid coupon ID' })
+    await Coupon.findByIdAndDelete(req.params.id)
+    res.json({ deleted: true })
+  } catch (e) { res.status(500).json({ error: e.message }) }
 })
 
 router.post('/batch', requireAdmin, async (req, res) => {

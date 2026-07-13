@@ -7,7 +7,7 @@ const schema = new mongoose.Schema({
   product_name: { type: String, default: '' },
   variant_name: { type: String, default: '' },
   quantity: { type: Number, default: 1 }
-}, { timestamps: true })
+, { timestamps: true, toJSON: { virtuals: true } })
 
 schema.index({ bundle_id: 1 })
 

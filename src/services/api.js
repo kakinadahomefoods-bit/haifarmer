@@ -2,6 +2,14 @@ const API_BASE = import.meta.env.VITE_API_URL || '/api'
 
 function token() { return localStorage.getItem('haifarmer_admin_token') }
 
+function ensureId(obj) {
+  if (Array.isArray(obj)) return obj.map(ensureId)
+  if (obj && typeof obj === 'object' && !obj.id && obj._id) {
+    obj.id = typeof obj._id === 'string' ? obj._id : obj._id.toString()
+  }
+  return obj
+}
+
 async function handleResponse(res) {
   if (!res.ok) {
     const body = await res.text()
@@ -12,7 +20,7 @@ async function handleResponse(res) {
   }
   const text = await res.text()
   if (!text) return null
-  try { return JSON.parse(text) } catch { return text }
+  try { return ensureId(JSON.parse(text)) } catch { return text }
 }
 
 function headers(extra = {}) {

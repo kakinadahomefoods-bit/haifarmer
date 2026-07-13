@@ -2,7 +2,7 @@ import { api } from '../../services/api'
 
 // ==================== GENERIC HELPERS ====================
 async function logAudit(action, entity, entityId, details) {
-  try { await api.post('/audit-logs', { action, entity, entity_id: entityId, details, admin_id: localStorage.getItem('admin_id') }) } catch {}
+  try { await api.post('/audit-logs', { action, entity, entity_id: entityId, details, admin_id: localStorage.getItem('admin_id') }) } catch (e) { console.warn('Audit log failed:', e.message) }
 }
 
 export function crud(path) {
@@ -25,6 +25,8 @@ export async function fetchProducts(search = '', order = '-createdAt') {
   if (search) params.set('search', search)
   return api.get(`/products?${params}`)
 }
+export async function createProduct(data) { return api.post('/products', data) }
+export async function updateProduct(id, data) { return api.put(`/products/${id}`, data) }
 export async function bulkUpdateProducts(ids, updates) {
   const data = await api.post('/products/bulk-update', { ids, updates })
   logAudit('bulk_update', 'product', null, { ids, updates }); return data

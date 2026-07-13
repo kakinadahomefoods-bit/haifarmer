@@ -14,6 +14,6 @@ const schema = new mongoose.Schema({
   about_description: { type: String, default: '' },
   about_image_url: { type: String, default: '' },
   header_text_1: { type: String, default: '' }
-}, { timestamps: true })
+, { timestamps: true, toJSON: { virtuals: true } })
 
 export default mongoose.model('SiteAsset', schema)

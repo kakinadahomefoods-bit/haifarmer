@@ -7,7 +7,7 @@ const schema = new mongoose.Schema({
   slug: { type: String, default: '' },
   sort_order: { type: Number, default: 0 },
   is_active: { type: Boolean, default: true }
-}, { timestamps: true })
+, { timestamps: true, toJSON: { virtuals: true } })
 
 schema.index({ sort_order: 1 })
 schema.index({ is_active: 1 })

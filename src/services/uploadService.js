@@ -1,12 +1,16 @@
-const CLOUD_NAME = 'p01dvbq8'
-const UPLOAD_PRESET = 'haifarmer_preset'
+const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD || 'p01dvbq8'
+const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'haifarmer_preset'
 
 export async function uploadImage(file, preset = UPLOAD_PRESET) {
   const formData = new FormData()
   formData.append('file', file)
   formData.append('upload_preset', preset)
   const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/upload`, { method: 'POST', body: formData })
-  if (!res.ok) { const err = await res.json(); throw new Error(err.error?.message || 'Upload failed') }
+  if (!res.ok) {
+    let msg = 'Upload failed'
+    try { const err = await res.json(); msg = err.error?.message || msg } catch {}
+    throw new Error(msg + ` (${res.status})`)
+  }
   const data = await res.json()
   return data.secure_url
 }

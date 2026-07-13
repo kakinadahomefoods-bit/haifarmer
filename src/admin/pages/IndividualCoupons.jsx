@@ -10,6 +10,7 @@ export default function AdminIndividualCoupons() {
   const [modalOpen, setModalOpen] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [editing, setEditing] = useState(null)
+  const [saving, setSaving] = useState(false)
   const [form, setForm] = useState({
     coupon_code: '', description: '', discount_type: 'percentage', discount_value: 10,
     min_order_value: 0, max_discount: '', expiry_date: '', usage_limit: 1, is_active: true,
@@ -45,13 +46,17 @@ export default function AdminIndividualCoupons() {
 
   const handleSave = async () => {
     if (!form.coupon_code) { toast.error('Coupon code required'); return }
+    if (!form.discount_value || Number(form.discount_value) <= 0) { toast.error('Discount value must be greater than 0'); return }
+    if (form.discount_type === 'percentage' && Number(form.discount_value) > 100) { toast.error('Percentage discount cannot exceed 100%'); return }
+    if (saving) return
+    setSaving(true)
     try {
       const payload = {
         ...form,
         discount_value: Number(form.discount_value),
         min_order_value: Number(form.min_order_value),
         max_discount: form.max_discount ? Number(form.max_discount) : null,
-        usage_limit: Number(form.usage_limit),
+        usage_limit: Math.max(1, Number(form.usage_limit) || 1),
         expiry_date: form.expiry_date || null,
         applicable_products: form.applicable_products ? form.applicable_products.split(',').map(s => s.trim()).filter(Boolean) : [],
         applicable_categories: form.applicable_categories ? form.applicable_categories.split(',').map(s => s.trim()).filter(Boolean) : [],
@@ -62,6 +67,7 @@ export default function AdminIndividualCoupons() {
       else { await createCoupon(payload); toast.success('Coupon created') }
       setModalOpen(false); load()
     } catch (e) { toast.error(e.message) }
+    finally { setSaving(false) }
   }
 
   return (
@@ -152,13 +158,13 @@ export default function AdminIndividualCoupons() {
             <Toggle checked={form.free_shipping} onChange={() => setForm({ ...form, free_shipping: !form.free_shipping })} label="Free Shipping" />
           </div>
           <div className="flex justify-end gap-3 pt-4 border-t">
-            <button onClick={() => setModalOpen(false)} className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700">Cancel</button>
-            <button onClick={handleSave} className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700">{editing ? 'Update' : 'Create'}</button>
+            <button onClick={() => setModalOpen(false)} disabled={saving} className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700">Cancel</button>
+            <button onClick={handleSave} disabled={saving} className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-50">{saving ? 'Saving...' : editing ? 'Update' : 'Create'}</button>
           </div>
         </div>
       </Modal>
 
-      <ConfirmDialog open={!!deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={() => deleteCoupon(deleteTarget.id).then(() => { toast.success('Coupon deleted'); load() }).catch(e => toast.error(e.message))}
+      <ConfirmDialog open={!!deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={async () => { if (saving) return; setSaving(true); try { await deleteCoupon(deleteTarget.id); toast.success('Coupon deleted'); load() } catch (e) { toast.error(e.message) } finally { setSaving(false); setDeleteTarget(null) } }}
         title="Delete Coupon?" message={`Delete coupon "${deleteTarget?.coupon_code}"?`} />
     </div>
   )

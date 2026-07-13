@@ -9,6 +9,6 @@ const schema = new mongoose.Schema({
   cod_available: { type: Boolean, default: true },
   delivery_slots: { type: String, default: '' },
   delivery_note: { type: String, default: '' }
-}, { timestamps: true })
+, { timestamps: true, toJSON: { virtuals: true } })
 
 export default mongoose.model('DeliverySetting', schema)

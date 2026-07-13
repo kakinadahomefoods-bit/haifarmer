@@ -1,8 +1,10 @@
 import { Router } from 'express'
+import mongoose from 'mongoose'
 import QRCode from '../models/QRCode.js'
 import { requireAdmin } from '../middleware/auth.js'
 
 const router = Router()
+function isValidId(id) { return mongoose.Types.ObjectId.isValid(id) }
 
 router.get('/', async (req, res) => {
   try {
@@ -13,24 +15,37 @@ router.get('/', async (req, res) => {
 })
 
 router.post('/', requireAdmin, async (req, res) => {
-  try { const item = await QRCode.create(req.body); res.status(201).json(item) }
-  catch (e) { res.status(400).json({ error: e.message }) }
+  try {
+    if (!req.body.name) return res.status(400).json({ error: 'QR name is required' })
+    if (!req.body.target_url) return res.status(400).json({ error: 'Target URL is required' })
+    const item = await QRCode.create(req.body)
+    res.status(201).json(item)
+  } catch (e) { res.status(400).json({ error: e.message }) }
 })
 
 router.put('/:id', requireAdmin, async (req, res) => {
-  try { const item = await QRCode.findByIdAndUpdate(req.params.id, req.body, { new: true }); if (!item) return res.status(404).json({ error: 'Not found' }); res.json(item) }
-  catch (e) { res.status(400).json({ error: e.message }) }
+  try {
+    if (!isValidId(req.params.id)) return res.status(400).json({ error: 'Invalid QR code ID' })
+    const item = await QRCode.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true })
+    if (!item) return res.status(404).json({ error: 'Not found' })
+    res.json(item)
+  } catch (e) { res.status(400).json({ error: e.message }) }
 })
 
 router.delete('/:id', requireAdmin, async (req, res) => {
-  try { await QRCode.findByIdAndDelete(req.params.id); res.json({ deleted: true }) }
-  catch (e) { res.status(500).json({ error: e.message }) }
+  try {
+    if (!isValidId(req.params.id)) return res.status(400).json({ error: 'Invalid QR code ID' })
+    await QRCode.findByIdAndDelete(req.params.id)
+    res.json({ deleted: true })
+  } catch (e) { res.status(500).json({ error: e.message }) }
 })
 
 router.post('/:id/regenerate', requireAdmin, async (req, res) => {
   try {
+    if (!isValidId(req.params.id)) return res.status(400).json({ error: 'Invalid QR code ID' })
     const { target_url } = req.body
-    const item = await QRCode.findByIdAndUpdate(req.params.id, { target_url: target_url || undefined }, { new: true })
+    if (!target_url) return res.status(400).json({ error: 'Target URL is required' })
+    const item = await QRCode.findByIdAndUpdate(req.params.id, { target_url }, { new: true, runValidators: true })
     if (!item) return res.status(404).json({ error: 'Not found' })
     res.json(item)
   } catch (e) { res.status(400).json({ error: e.message }) }

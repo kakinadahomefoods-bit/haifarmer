@@ -11,7 +11,7 @@ const schema = new mongoose.Schema({
   is_active: { type: Boolean, default: true },
   starts_at: { type: Date, default: null },
   ends_at: { type: Date, default: null }
-}, { timestamps: true })
+}, { timestamps: true, toJSON: { virtuals: true } })
 
 schema.index({ sort_order: 1 })
 

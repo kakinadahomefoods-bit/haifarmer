@@ -8,7 +8,7 @@ const schema = new mongoose.Schema({
   bundle_image_url: { type: String, default: '' },
   is_combo: { type: Boolean, default: true },
   is_active: { type: Boolean, default: true }
-}, { timestamps: true })
+, { timestamps: true, toJSON: { virtuals: true } })
 
 schema.index({ is_active: 1 })
 

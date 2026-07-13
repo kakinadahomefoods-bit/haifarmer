@@ -8,6 +8,7 @@ export default function AdminBatchCoupons() {
   const [loading, setLoading] = useState(true)
   const [modalOpen, setModalOpen] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState(null)
+  const [saving, setSaving] = useState(false)
   const [form, setForm] = useState({
     batch_name: '', prefix: '', count: 100, discount_type: 'percentage',
     discount_value: 10, min_order_value: 0, max_discount: '', expiry_date: '', usage_limit: 1, scope: 'all',
@@ -20,6 +21,8 @@ export default function AdminBatchCoupons() {
 
   const handleGenerate = async () => {
     if (form.count < 1 || form.count > 10000) { toast.error('Count must be 1-10000'); return }
+    if (saving) return
+    setSaving(true)
     try {
       const appProducts = form.applicable_products ? form.applicable_products.split(',').map(s => s.trim()) : null
       const appCategories = form.applicable_categories ? form.applicable_categories.split(',').map(s => s.trim()) : null
@@ -33,10 +36,15 @@ export default function AdminBatchCoupons() {
       toast.success(`Generated ${form.count} coupons`)
       setModalOpen(false); load()
     } catch (e) { toast.error(e.message) }
+    finally { setSaving(false) }
   }
 
   const handleDelete = async () => {
-    try { await couponApi.remove(deleteTarget.id); toast.success('Deleted'); setDeleteTarget(null); load() } catch (e) { toast.error(e.message) }
+    if (saving) return
+    setSaving(true)
+    try { await couponApi.remove(deleteTarget.id); toast.success('Deleted'); load() }
+    catch (e) { toast.error(e.message) }
+    finally { setSaving(false); setDeleteTarget(null) }
   }
 
   const handleExport = async () => {
@@ -109,8 +117,8 @@ export default function AdminBatchCoupons() {
             <label htmlFor="batch-active" className="text-sm text-slate-700">Active immediately</label>
           </div>
           <div className="flex justify-end gap-3 pt-4 border-t">
-            <button onClick={() => setModalOpen(false)} className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700">Cancel</button>
-            <button onClick={handleGenerate} className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white">{form.count > 1 ? `Generate ${form.count} Coupons` : 'Generate 1 Coupon'}</button>
+            <button onClick={() => setModalOpen(false)} disabled={saving} className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700">Cancel</button>
+            <button onClick={handleGenerate} disabled={saving} className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">{saving ? 'Generating...' : form.count > 1 ? `Generate ${form.count} Coupons` : 'Generate 1 Coupon'}</button>
           </div>
         </div>
       </Modal>

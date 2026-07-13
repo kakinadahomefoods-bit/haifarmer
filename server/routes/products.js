@@ -1,9 +1,11 @@
 import { Router } from 'express'
+import mongoose from 'mongoose'
 import Product from '../models/Product.js'
 import ProductVariant from '../models/ProductVariant.js'
 import { requireAdmin } from '../middleware/auth.js'
 
 const router = Router()
+function isValidId(id) { return mongoose.Types.ObjectId.isValid(id) }
 
 router.get('/', async (req, res) => {
   try {
@@ -22,6 +24,7 @@ router.get('/', async (req, res) => {
 
 router.get('/:id', async (req, res) => {
   try {
+    if (!isValidId(req.params.id)) return res.status(400).json({ error: 'Invalid product ID' })
     const item = await Product.findById(req.params.id)
     if (!item) return res.status(404).json({ error: 'Not found' })
     const variants = await ProductVariant.find({ product_id: item._id })
@@ -32,8 +35,11 @@ router.get('/:id', async (req, res) => {
 router.post('/', requireAdmin, async (req, res) => {
   try {
     const { variants, ...productData } = req.body
-    if (productData.discount_percent) productData.final_price = productData.base_price * (1 - productData.discount_percent / 100)
-    else productData.final_price = productData.base_price
+    if (!productData.name || !productData.name.trim()) return res.status(400).json({ error: 'Product name is required' })
+    productData.base_price = Math.max(0, Number(productData.base_price) || 0)
+    productData.discount_percent = Math.min(100, Math.max(0, Number(productData.discount_percent) || 0))
+    productData.stock_quantity = Math.max(0, Number(productData.stock_quantity) || 0)
+    productData.final_price = productData.base_price * (1 - productData.discount_percent / 100)
     const product = await Product.create(productData)
     if (variants?.length) {
       await ProductVariant.insertMany(variants.map(v => ({ ...v, product_id: product._id })))
@@ -44,9 +50,15 @@ router.post('/', requireAdmin, async (req, res) => {
 
 router.put('/:id', requireAdmin, async (req, res) => {
   try {
+    if (!isValidId(req.params.id)) return res.status(400).json({ error: 'Invalid product ID' })
     const { variants, ...productData } = req.body
-    if (productData.discount_percent !== undefined) productData.final_price = productData.base_price * (1 - productData.discount_percent / 100)
-    const product = await Product.findByIdAndUpdate(req.params.id, productData, { new: true })
+    if (productData.base_price !== undefined) productData.base_price = Math.max(0, Number(productData.base_price) || 0)
+    if (productData.discount_percent !== undefined) {
+      productData.discount_percent = Math.min(100, Math.max(0, Number(productData.discount_percent) || 0))
+      productData.final_price = productData.base_price * (1 - productData.discount_percent / 100)
+    }
+    if (productData.stock_quantity !== undefined) productData.stock_quantity = Math.max(0, Number(productData.stock_quantity) || 0)
+    const product = await Product.findByIdAndUpdate(req.params.id, productData, { new: true, runValidators: true })
     if (!product) return res.status(404).json({ error: 'Not found' })
     if (variants) {
       await ProductVariant.deleteMany({ product_id: product._id })
@@ -58,6 +70,7 @@ router.put('/:id', requireAdmin, async (req, res) => {
 
 router.delete('/:id', requireAdmin, async (req, res) => {
   try {
+    if (!isValidId(req.params.id)) return res.status(400).json({ error: 'Invalid product ID' })
     await Product.findByIdAndDelete(req.params.id)
     await ProductVariant.deleteMany({ product_id: req.params.id })
     res.json({ deleted: true })
@@ -83,6 +96,7 @@ router.post('/bulk-delete', requireAdmin, async (req, res) => {
 
 router.post('/:id/duplicate', requireAdmin, async (req, res) => {
   try {
+    if (!isValidId(req.params.id)) return res.status(400).json({ error: 'Invalid product ID' })
     const original = await Product.findById(req.params.id)
     if (!original) return res.status(404).json({ error: 'Not found' })
     const copy = await Product.create({ ...original.toObject(), _id: undefined, name: `${original.name} (Copy)`, createdAt: undefined, updatedAt: undefined })

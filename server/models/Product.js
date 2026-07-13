@@ -19,7 +19,7 @@ const schema = new mongoose.Schema({
   is_new_arrival: { type: Boolean, default: false },
   is_trending: { type: Boolean, default: false },
   tags: [{ type: String }]
-}, { timestamps: true })
+}, { timestamps: true, toJSON: { virtuals: true } })
 
 schema.index({ name: 'text', description: 'text' })
 schema.index({ category: 1 })

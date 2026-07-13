@@ -6,6 +6,7 @@ import { Modal, DataTable, Toggle } from '../../components/ui'
 export default function AdminQRCodes() {
   const [items, setItems] = useState([]); const [loading, setLoading] = useState(true)
   const [modal, setModal] = useState(false); const [editing, setEditing] = useState(null)
+  const [saving, setSaving] = useState(false)
   const [form, setForm] = useState({ name: 'Farmer Page QR', target_url: '', is_active: true })
   const [qrUrl, setQrUrl] = useState('')
 
@@ -26,6 +27,9 @@ export default function AdminQRCodes() {
 
   const save = async () => {
     if (!form.name) { toast.error('Name is required'); return }
+    if (!form.target_url) { toast.error('Target URL is required'); return }
+    if (saving) return
+    setSaving(true)
     try {
       if (editing) {
         await qrApi.update(editing.id, form)
@@ -37,11 +41,16 @@ export default function AdminQRCodes() {
       }
       load()
     } catch (e) { toast.error(e.message) }
+    finally { setSaving(false) }
   }
 
   const handleRegenerate = async (item) => {
+    if (saving) return
+    setSaving(true)
     const newUrl = `${window.location.origin}/farmer?qr=${item.id}&t=${Date.now()}`
-    try { await regenerateQR(item.id, newUrl); toast.success('QR regenerated'); load() } catch (e) { toast.error(e.message) }
+    try { await regenerateQR(item.id, newUrl); toast.success('QR regenerated'); load() }
+    catch (e) { toast.error(e.message) }
+    finally { setSaving(false) }
   }
 
   const downloadQR = (url, name) => {
@@ -81,8 +90,8 @@ export default function AdminQRCodes() {
             </div>
           )}
           <div className="flex justify-end gap-3 pt-4 border-t">
-            <button onClick={() => setModal(false)} className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700">Close</button>
-            {!editing && <button onClick={save} className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white">Generate</button>}
+            <button onClick={() => setModal(false)} disabled={saving} className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700">Close</button>
+            {!editing && <button onClick={save} disabled={saving} className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">{saving ? 'Generating...' : 'Generate'}</button>}
           </div>
         </div>
       </Modal>

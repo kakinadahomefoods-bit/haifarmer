@@ -9,6 +9,7 @@ export default function AdminFarmers() {
   const [modal, setModal] = useState(false); const [editing, setEditing] = useState(null)
   const [form, setForm] = useState({ name: '', email: '', phone: '', crop: '', image_url: '', address: '', description: '', is_approved: false, is_active: true })
   const [deleteTarget, setDeleteTarget] = useState(null)
+  const [saving, setSaving] = useState(false)
 
   const load = async () => { setLoading(true); try { setItems(await farmerApi.fetch('created_at.desc')) } catch (e) { toast.error(e.message) }; setLoading(false) }
   useEffect(() => { load() }, [])
@@ -18,17 +19,28 @@ export default function AdminFarmers() {
 
   const save = async () => {
     if (!form.name) { toast.error('Name is required'); return }
+    if (saving) return
+    setSaving(true)
     try {
       if (editing) { await farmerApi.update(editing.id, form); toast.success('Updated') }
       else { await farmerApi.create(form); toast.success('Created') }
       setModal(false); load()
     } catch (e) { toast.error(e.message) }
+    finally { setSaving(false) }
   }
   const handleDelete = async () => {
-    try { await farmerApi.remove(deleteTarget.id); toast.success('Deleted'); setDeleteTarget(null); load() } catch (e) { toast.error(e.message) }
+    if (saving) return
+    setSaving(true)
+    try { await farmerApi.remove(deleteTarget.id); toast.success('Deleted'); load() }
+    catch (e) { toast.error(e.message) }
+    finally { setSaving(false); setDeleteTarget(null) }
   }
   const handleApprove = async (item) => {
-    try { await approveFarmer(item.id); toast.success('Farmer approved'); load() } catch (e) { toast.error(e.message) }
+    if (saving) return
+    setSaving(true)
+    try { await approveFarmer(item.id); toast.success('Farmer approved'); load() }
+    catch (e) { toast.error(e.message) }
+    finally { setSaving(false) }
   }
 
   return (
@@ -73,8 +85,8 @@ export default function AdminFarmers() {
             <div className="flex items-center gap-2"><Toggle checked={form.is_active} onChange={() => setForm({...form, is_active: !form.is_active})} /><span className="text-sm">Active</span></div>
           </div>
           <div className="flex justify-end gap-3 pt-4 border-t">
-            <button onClick={() => setModal(false)} className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700">Cancel</button>
-            <button onClick={save} className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white">Save</button>
+            <button onClick={() => setModal(false)} disabled={saving} className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700">Cancel</button>
+            <button onClick={save} disabled={saving} className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">{saving ? 'Saving...' : 'Save'}</button>
           </div>
         </div>
       </Modal>

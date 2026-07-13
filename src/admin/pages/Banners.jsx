@@ -11,6 +11,7 @@ export default function AdminBanners() {
   const [modalOpen, setModalOpen] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [editing, setEditing] = useState(null)
+  const [saving, setSaving] = useState(false)
   const [preview, setPreview] = useState(null)
   const [form, setForm] = useState({
     title: '', subtitle: '', button_text: '', button_url: '',
@@ -49,6 +50,8 @@ export default function AdminBanners() {
 
   const handleSave = async () => {
     if (!form.title) { toast.error('Title is required'); return }
+    if (saving) return
+    setSaving(true)
     try {
       const payload = {
         ...form,
@@ -65,14 +68,18 @@ export default function AdminBanners() {
       setModalOpen(false)
       loadBanners()
     } catch (e) { toast.error(e.message) }
+    finally { setSaving(false) }
   }
 
   const handleDelete = async () => {
+    if (saving) return
+    setSaving(true)
     try {
       await deleteBanner(deleteTarget.id)
       toast.success('Banner deleted')
       loadBanners()
     } catch (e) { toast.error(e.message) }
+    finally { setSaving(false); setDeleteTarget(null) }
   }
 
   const handleReorder = async (id, direction) => {
@@ -183,8 +190,8 @@ export default function AdminBanners() {
           </div>
           <Toggle checked={form.is_active} onChange={() => setForm({ ...form, is_active: !form.is_active })} label="Active" />
           <div className="flex justify-end gap-3 pt-4 border-t">
-            <button onClick={() => setModalOpen(false)} className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700">Cancel</button>
-            <button onClick={handleSave} className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700">{editing ? 'Update' : 'Create'}</button>
+            <button onClick={() => setModalOpen(false)} disabled={saving} className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700">Cancel</button>
+            <button onClick={handleSave} disabled={saving} className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-50">{saving ? 'Saving...' : editing ? 'Update' : 'Create'}</button>
           </div>
         </div>
       </Modal>
@@ -207,7 +214,7 @@ export default function AdminBanners() {
       </Modal>
 
       <ConfirmDialog open={!!deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={handleDelete}
-        title="Delete Banner?" message={`Are you sure you want to delete "${deleteTarget?.title}"? This cannot be undone.`} />
+        title="Delete Banner?" message={`Are you sure you want to delete "${deleteTarget?.title}"?`} confirmText={saving ? 'Deleting...' : 'Delete'} />
     </div>
   )
 }
