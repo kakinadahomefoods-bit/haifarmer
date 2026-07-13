@@ -5,7 +5,7 @@ const schema = new mongoose.Schema({
   status: { type: String, required: true },
   note: { type: String, default: '' },
   updated_by: { type: String, default: 'system' }
-, { timestamps: true, toJSON: { virtuals: true } })
+}, { timestamps: true, toJSON: { virtuals: true } })
 
 schema.index({ order_id: 1, createdAt: -1 })
 

@@ -6,7 +6,7 @@ const schema = new mongoose.Schema({
   entity: { type: String, required: true },
   entity_id: { type: String, default: null },
   details: { type: mongoose.Schema.Types.Mixed, default: null }
-, { timestamps: true, toJSON: { virtuals: true } })
+}, { timestamps: true, toJSON: { virtuals: true } })
 
 schema.index({ createdAt: -1 })
 schema.index({ entity: 1, entity_id: 1 })

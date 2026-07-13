@@ -17,6 +17,6 @@ const schema = new mongoose.Schema({
   refund_page: { type: String, default: '' },
   shipping_page: { type: String, default: '' },
   about_page: { type: String, default: '' }
-, { timestamps: true, toJSON: { virtuals: true } })
+}, { timestamps: true, toJSON: { virtuals: true } })
 
 export default mongoose.model('BusinessSetting', schema)

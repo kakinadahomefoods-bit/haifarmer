@@ -6,7 +6,7 @@ import AdminUser from './models/AdminUser.js'
 async function start() {
   try {
     try { await mongoose.connect(MONGO_URI, { serverSelectionTimeoutMS: 5000 }) }
-    catch { await mongoose.connect(MONGO_URI_DIRECT, { serverSelectionTimeoutMS: 10000 }) }
+    catch (e) { await mongoose.connect(MONGO_URI_DIRECT, { serverSelectionTimeoutMS: 10000 }) }
     console.log('Connected to MongoDB')
     const adminCount = await AdminUser.countDocuments()
     if (adminCount === 0) {

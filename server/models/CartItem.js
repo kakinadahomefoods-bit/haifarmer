@@ -9,7 +9,7 @@ const schema = new mongoose.Schema({
   quantity: { type: Number, default: 1 },
   unit: { type: String, default: '' },
   image_url: { type: String, default: '' }
-, { timestamps: true, toJSON: { virtuals: true } })
+}, { timestamps: true, toJSON: { virtuals: true } })
 
 schema.index({ session_id: 1 })
 

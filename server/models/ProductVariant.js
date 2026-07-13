@@ -9,7 +9,7 @@ const schema = new mongoose.Schema({
   unit_count: { type: Number, default: 1 },
   stock_quantity: { type: Number, default: 0 },
   is_active: { type: Boolean, default: true }
-, { timestamps: true, toJSON: { virtuals: true } })
+}, { timestamps: true, toJSON: { virtuals: true } })
 
 schema.index({ product_id: 1 })
 

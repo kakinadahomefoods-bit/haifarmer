@@ -23,7 +23,7 @@ const schema = new mongoose.Schema({
   delivery_type: { type: String, default: 'standard' },
   delivery_slot: { type: String, default: '' },
   notes: { type: String, default: '' }
-, { timestamps: true, toJSON: { virtuals: true } })
+}, { timestamps: true, toJSON: { virtuals: true } })
 
 schema.index({ status: 1, payment_status: 1 })
 schema.index({ createdAt: -1 })
